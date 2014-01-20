@@ -1,6 +1,8 @@
 package org.shobhank;
 
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
@@ -12,12 +14,18 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-public class MailAction {
+import com.opensymphony.xwork2.ActionSupport;
+
+public class MailAction extends ActionSupport {
 	private String from;
 	private String password;
 	private String to;
 	private String subject;
 	private String body;
+	private static final String emailRegex;
+	static Properties properties = new Properties();
+	private Pattern pattern;
+	private Matcher matcher;
 	
 	public String getFrom() {
 		return from;
@@ -59,10 +67,8 @@ public class MailAction {
 		this.body = body;
 	}
 
-	
-	
-	static Properties properties = new Properties();
 	static{
+		emailRegex = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 		properties.put("mail.smtp.host", "smtp.gmail.com");
 		properties.put("mail.smtp.socketFactory.port", "465");
 		properties.put("mail.smtp.socketFactory.class",
@@ -94,5 +100,19 @@ public class MailAction {
 			e.printStackTrace();
 		}
 		return result;
+	}
+	
+	public void validate(){
+		if (from.equals(""))
+			addFieldError("from","The field is required");
+		if (to.equals(""))
+			addFieldError("to","The field is required");
+		pattern = Pattern.compile(emailRegex);	
+		matcher = pattern.matcher(from);
+		if(!matcher.matches())
+			addFieldError("from","The field has error please verify emailID");
+		matcher = pattern.matcher(to);
+		if(!matcher.matches())
+			addFieldError("to","The field has error please verify emailID");
 	}
 }
